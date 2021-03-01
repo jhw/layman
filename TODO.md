@@ -2,13 +2,13 @@
 
 - github project
 
-- check at what stage lambada passes buildspec to stack
+- test stack deployment
 
-- deploy stack
-- run project
+- script to run build
 
 ### medium
 
 ### done
 
+- deploy stack
 - deploy_stack.py from pareto

@@ -7,8 +7,6 @@ Parameters:
     Type: String
   WebhookLambda:
     Type: String
-  CodeBuildBuildSpec:
-    Type: String
   CodeBuildType:
     Type: String
     Default: LINUX_CONTAINER
