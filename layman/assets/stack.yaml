@@ -3,14 +3,6 @@ AWSTemplateFormatVersion: '2010-09-09'
 Parameters:
   AppName:
     Type: String
-  RepoOwner:
-    Type: String
-  RepoName:
-    Type: String
-  RepoBranch:
-    Type: String
-  RepoPAT:
-    Type: String
   WebhookUrl:
     Type: String
   WebhookLambda:
@@ -48,8 +40,6 @@ Resources:
           - app_name:
               Ref: AppName
   CodeBuildProject:
-    DependsOn:
-      - CodeBuildSourceCredential
     Properties:
       Environment:
         ComputeType:
@@ -64,41 +54,9 @@ Resources:
         Fn::GetAtt:
           - CodeBuildRole
           - Arn
-      Source:
-        Location:
-          Fn::Sub:
-            - "https://github.com/${repo_owner}/${repo_name}.git"
-            - repo_owner:
-                Ref: RepoOwner
-              repo_name:
-                Ref: RepoName
-        Type: GITHUB
-        BuildSpec:
-          Fn::Sub:
-            - "${build_spec}"
-            - build_spec:
-                Ref: CodeBuildBuildSpec
       Artifacts:
         Type: NO_ARTIFACTS
-      SourceVersion:
-        Ref: RepoBranch
-      Triggers:
-        Webhook: true
-        FilterGroups:
-          - - Type: EVENT
-              Pattern: PUSH
-              ExcludeMatchedPattern: false
-            - Type: HEAD_REF
-              Pattern: "refs/tags/.*"
-              ExcludeMatchedPattern: false
     Type: AWS::CodeBuild::Project
-  CodeBuildSourceCredential:
-    Type: AWS::CodeBuild::SourceCredential
-    Properties:
-      Token:
-        Ref: RepoPAT
-      ServerType: GITHUB
-      AuthType: PERSONAL_ACCESS_TOKEN
   CodeBuildRole:
     Properties:
       AssumeRolePolicyDocument:
