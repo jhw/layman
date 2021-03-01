@@ -1,0 +1,226 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Parameters:
+  AppName:
+    Type: String
+  RepoOwner:
+    Type: String
+  RepoName:
+    Type: String
+  RepoBranch:
+    Type: String
+  RepoPAT:
+    Type: String
+  WebhookUrl:
+    Type: String
+  WebhookLambda:
+    Type: String
+  CodeBuildBuildSpec:
+    Type: String
+  CodeBuildType:
+    Type: String
+    Default: LINUX_CONTAINER
+  CodeBuildComputeType:
+    Type: String
+    Default: BUILD_GENERAL1_SMALL
+  CodeBuildImage:
+    Type: String
+    Default: aws/codebuild/standard:4.0
+  LambdaHandler:
+    Type: String
+    Default: "index.handler"
+  LambdaMemory:
+    Type: Number
+    Default: 128
+  LambdaTimeout:
+    Type: Number
+    Default: 30
+  LambdaRuntime:
+    Type: String
+    Default: python3.8
+Resources:
+  ArtifactsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName:
+        Fn::Sub:
+          - ${app_name}-artifacts
+          - app_name:
+              Ref: AppName
+  CodeBuildProject:
+    DependsOn:
+      - CodeBuildSourceCredential
+    Properties:
+      Environment:
+        ComputeType:
+          Ref: CodeBuildComputeType
+        Image:
+          Ref: CodeBuildImage
+        Type:
+          Ref: CodeBuildType
+      Name:
+        Ref: AppName
+      ServiceRole:
+        Fn::GetAtt:
+          - CodeBuildRole
+          - Arn
+      Source:
+        Location:
+          Fn::Sub:
+            - "https://github.com/${repo_owner}/${repo_name}.git"
+            - repo_owner:
+                Ref: RepoOwner
+              repo_name:
+                Ref: RepoName
+        Type: GITHUB
+        BuildSpec:
+          Fn::Sub:
+            - "${build_spec}"
+            - build_spec:
+                Ref: CodeBuildBuildSpec
+      Artifacts:
+        Type: NO_ARTIFACTS
+      SourceVersion:
+        Ref: RepoBranch
+      Triggers:
+        Webhook: true
+        FilterGroups:
+          - - Type: EVENT
+              Pattern: PUSH
+              ExcludeMatchedPattern: false
+            - Type: HEAD_REF
+              Pattern: "refs/tags/.*"
+              ExcludeMatchedPattern: false
+    Type: AWS::CodeBuild::Project
+  CodeBuildSourceCredential:
+    Type: AWS::CodeBuild::SourceCredential
+    Properties:
+      Token:
+        Ref: RepoPAT
+      ServerType: GITHUB
+      AuthType: PERSONAL_ACCESS_TOKEN
+  CodeBuildRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: codebuild.amazonaws.com
+        Version: '2012-10-17'
+      Policies:
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - codebuild:*
+                  - events:*
+                  - s3:PutObject
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Effect: Allow
+                Resource: '*'
+            Version: '2012-10-17'
+          PolicyName: code-build-role-policy
+    Type: AWS::IAM::Role
+  CodeBuildNotificationFunction:
+    Properties:
+      Code:
+        ZipFile:
+          Ref: WebhookLambda
+      Environment:
+        Variables:
+          WEBHOOK_URL:
+            Ref: WebhookUrl
+      Handler:
+        Ref: LambdaHandler
+      MemorySize:
+        Ref: LambdaMemory
+      Role:
+        Fn::GetAtt:
+          - CodeBuildNotificationFunctionRole
+          - Arn
+      Runtime:
+        Ref: LambdaRuntime
+      Timeout:
+        Ref: LambdaTimeout
+    Type: AWS::Lambda::Function
+  CodeBuildNotificationFunctionRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: '2012-10-17'
+      Policies:
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Effect: Allow
+                Resource: '*'
+            Version: '2012-10-17'
+          PolicyName: code-build-notification-role-policy
+    Type: AWS::IAM::Role
+  CodeBuildNotificationFunctionInvokePermission:
+    Properties:
+      Action: "lambda:InvokeFunction"
+      FunctionName:
+        Ref: CodeBuildNotificationFunction
+      Principal: "sns.amazonaws.com"
+      SourceArn:
+        Ref: CodeBuildNotificationTopic
+    Type: AWS::Lambda::Permission
+  CodeBuildNotificationTopic:
+    Properties:
+      Subscription:
+        - Protocol: lambda
+          Endpoint:
+            Fn::GetAtt:
+              - CodeBuildNotificationFunction
+              - Arn
+    Type: AWS::SNS::Topic
+  CodeBuildNotificationTopicPolicy:
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: "events.amazonaws.com"
+            Action:
+              - "sns:Publish"
+            Resource:
+              Ref: CodeBuildNotificationTopic
+      Topics:
+        - Ref: CodeBuildNotificationTopic
+    Type: AWS::SNS::TopicPolicy
+  CloudWatchEventRule:
+    Type: AWS::Events::Rule
+    Properties:
+      EventPattern:
+        Fn::Sub:
+          - '{"source": ["aws.codebuild"], "detail-type": ["CodeBuild Build Phase Change"], "detail": {"completed-phase": ["SUBMITTED", "PROVISIONING", "DOWNLOAD_SOURCE", "INSTALL", "PRE_BUILD", "BUILD", "POST_BUILD", "UPLOAD_ARTIFACTS", "FINALIZING"], "completed-phase-status": ["TIMED_OUT", "STOPPED", "FAILED", "SUCCEEDED", "FAULT", "CLIENT_ERROR"], "project-name": ["${project_name}"]}}'
+          - project_name:
+              Ref: CodeBuildProject
+      State: ENABLED
+      Targets:
+        - Arn:
+            Ref: CodeBuildNotificationTopic
+          Id:
+            Fn::Sub:
+              - "${project_name}-codebuild-notifications"
+              - project_name:
+                  Ref: CodeBuildProject
+          InputTransformer:
+            InputPathsMap:
+              build-id: "$.detail.build-id"
+              project-name: "$.detail.project-name"
+              completed-phase: "$.detail.completed-phase"
+              completed-phase-status: "$.detail.completed-phase-status"
+            InputTemplate: |
+              "{'build-id': '<build-id>', 'project-name': '<project-name>', 'completed-phase': '<completed-phase>', 'completed-phase-status': '<completed-phase-status>'}"
