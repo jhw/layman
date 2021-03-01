@@ -32,21 +32,21 @@ def filter_pip_dependencies(root="requirements.txt"):
                 not row.startswith("git+"))]
 
 setuptools.setup(
-    name="lambada",
-    version="1.0.10",
+    name="layman",
+    version="1.0.0",
     author="jhw",
     author_email="justin.worrall@gmail.com",
-    description="Lambda CI pipeline",
+    description="Lambda Layer pipeline",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/jhw/lambada",
+    url="https://github.com/jhw/layman",
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
     # packages=setuptools.find_packages(),
-    packages=filter_packages("lambada"),
+    packages=filter_packages("layman"),
     install_requires=filter_pip_dependencies(),
     # https://stackoverflow.com/a/57932258/124179
     setup_requires=['setuptools_scm'],
