@@ -1,7 +1,6 @@
 ### short [run-build]
 
-- generate buildspec and artifacts path
-- replace `requirements.txt` with `manifest.json`
+- artifacts path
 - update codebuild project
 - run project
   - remove waiter code
@@ -16,6 +15,8 @@
 
 ### done
 
+- generate buildspec
+- replace `requirements.txt` with `manifest.json`
 - add artifacts to stack
 - source with blank buildspec
 - test deploy/delete_stack.py

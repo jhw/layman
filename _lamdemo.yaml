@@ -1,6 +1,9 @@
 ---
 globals:
   app: lamdemo
+  runtime: python3.8
+slack:
+  webhook: null  # change
 deps:
   - name: lxml
   - name: requests
