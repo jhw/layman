@@ -69,6 +69,7 @@ Resources:
         Location:
           Ref: ArtifactsBucket
         Packaging: ZIP
+        OverrideArtifactName: true
     Type: AWS::CodeBuild::Project
   CodeBuildRole:
     Properties:

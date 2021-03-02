@@ -44,22 +44,19 @@ def init_buildspec(config,
             "phases": init_phases(config),
             "artifacts": init_artifacts(config)}
 
-def update_project(cb, config, buildspec):
-
-    source={"type": "NO_SOURCE",
-            "buildspec": yaml.safe_dump(buildspec,
-                                        default_flow_style=False)}
-    print (cb.update_project(name=projectname,
-                             source=source))
-
 def run_build(cb, config):
     buildspec=init_buildspec(config)
     projectname="%s-layman-ci" % config["globals"]["app"]
+    buildspecstr=yaml.safe_dump(buildspec,
+                                default_flow_style=False)
     source={"type": "NO_SOURCE",
-            "buildspec": yaml.safe_dump(buildspec,
-                                        default_flow_style=False)}
+            "buildspec": buildspecstr}
+    print ("--- buildspec.yaml ---")
+    print (buildspecstr)
+    print ("--- update_project ---")
     print (cb.update_project(name=projectname,
                              source=source))
+    print ("--- start_build ---")
     print (cb.start_build(projectName=projectname))
 
 if __name__=="__main__":
