@@ -1,20 +1,19 @@
 ### short [run-build]
 
-- artifacts path
-- update codebuild project
-- run project
-  - remove waiter code
+- start project
 
 ### lambada
 
 - bucket, codebuild project in stack.yaml need -lambada suffixes
   - see layman stack.yaml
+
 - update bucket ref in scripts/delete_stack.py
 
 ### medium
 
 ### done
 
+- update codebuild project
 - generate buildspec
 - replace `requirements.txt` with `manifest.json`
 - add artifacts to stack

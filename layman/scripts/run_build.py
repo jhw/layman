@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import boto3, datetime, json, os, sys, yaml
+import boto3, datetime, json, os, sys, time, yaml
 
 from botocore.exceptions import ClientError
 
@@ -44,10 +44,18 @@ def init_buildspec(config,
             "phases": init_phases(config),
             "artifacts": init_artifacts(config)}
 
+def update_project(cb, config, buildspec):
+    projectname="%s-layman-ci" % config["globals"]["app"]
+    source={"type": "NO_SOURCE",
+            "buildspec": yaml.safe_dump(buildspec,
+                                        default_flow_style=False)}
+    print (cb.update_project(name=projectname,
+                             source=source))
 
-def run_build(config):
+def run_build(cb, config):
     buildspec=init_buildspec(config)
-    print (yaml.safe_dump(buildspec, default_flow_style=False))
+    update_project(cb, config, buildspec)
+
 
 if __name__=="__main__":
     try:
@@ -59,7 +67,7 @@ if __name__=="__main__":
         if not os.path.exists(configfile):
             raise RuntimeError("config does not exist")
         config=yaml.safe_load(open(configfile).read())    
-        run_build(config)
+        run_build(boto3.client("codebuild"), config)
     except ClientError as error:
         print (error)
     except RuntimeError as error:
