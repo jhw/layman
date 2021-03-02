@@ -65,7 +65,10 @@ Resources:
           - CodeBuildRole
           - Arn
       Artifacts:
-        Type: NO_ARTIFACTS
+        Type: S3
+        Location:
+          Ref: ArtifactsBucket
+        Packaging: ZIP
     Type: AWS::CodeBuild::Project
   CodeBuildRole:
     Properties:

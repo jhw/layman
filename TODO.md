@@ -1,9 +1,10 @@
-### short
+### short [run-build]
 
-- run_build.py
-  - see dev/build_layer.py
-  - need to update project with buildspec
-  - ensure package includes manifest.json
+- generate buildspec and artifacts path
+- replace `requirements.txt` with `manifest.json`
+- update codebuild project
+- run project
+  - remove waiter code
 
 ### lambada
 
@@ -15,6 +16,7 @@
 
 ### done
 
+- add artifacts to stack
 - source with blank buildspec
 - test deploy/delete_stack.py
 - github project
