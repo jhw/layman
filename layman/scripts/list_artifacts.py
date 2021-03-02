@@ -18,7 +18,7 @@ if __name__=="__main__":
         if len(sys.argv) < 2:
             raise RuntimeError("Please enter app name")
         appname=sys.argv[1].split(".")[0] # just in case config file specified
-        bucket="%s-artifacts" % appname
+        bucket="%s-layman-artifacts" % appname
         list_s3(boto3.client("s3"), bucket)
     except ClientError as error:
         print (error)
