@@ -1,0 +1,14 @@
+---
+globals:
+  app: lamdemo
+deps:
+  - name: lxml
+  - name: requests
+  - name: pymorphy2
+    version: "0.8"
+  - name: readability
+    repo:
+      host: github
+      owner: jhw
+    version: "1.0.2"
+  

@@ -9,7 +9,11 @@ DefaultDeps=yaml.safe_load("""
 - name: awscli
 """)
 
-CodeBuildVersion, PythonRuntime = "0.2", "3.8"
+CodeBuildVersion= "0.2"
+
+BuildSpec={"version": CodeBuildVersion,
+           "phases": {},
+           "env": {"variables": {}}}
 
 StackNamePattern="%s-layman-ci"
 
@@ -18,8 +22,8 @@ https://stackoverflow.com/questions/247770/how-to-retrieve-a-modules-path
 """
 
 def load_path(path):
-    import lambada
-    return "%s/%s" % (lambada.__path__.__dict__["_path"][0], path)
+    import layman
+    return "%s/%s" % (layman.__path__.__dict__["_path"][0], path)
 
 StackTemplate=open(load_path("assets/stack.yaml")).read()
 
@@ -28,6 +32,7 @@ WebhookLambda=open(load_path("assets/webhook.py")).read()
 def deploy_stack(cf, config,
                  stacknamepat=StackNamePattern,
                  stackbody=StackTemplate,
+                 buildspec=BuildSpec,
                  webhook=WebhookLambda):
     def stack_exists(cf, stackname):
         stacknames=[stack["StackName"]
@@ -35,6 +40,7 @@ def deploy_stack(cf, config,
         return stackname in stacknames
     def init_params(params, webhook):
         return {"AppName": params["globals"]["app"],
+                "CodeBuildBuildSpec": yaml.safe_dump(buildspec),
                 "WebhookUrl": params["slack"]["webhook"],
                 "WebhookLambda": webhook}
         return fn(aws_format(modkwargs))

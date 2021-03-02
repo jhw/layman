@@ -7,6 +7,8 @@ Parameters:
     Type: String
   WebhookLambda:
     Type: String
+  CodeBuildBuildSpec:
+    Type: String
   CodeBuildType:
     Type: String
     Default: LINUX_CONTAINER
@@ -34,7 +36,7 @@ Resources:
     Properties:
       BucketName:
         Fn::Sub:
-          - ${app_name}-artifacts
+          - ${app_name}-layman-artifacts
           - app_name:
               Ref: AppName
   CodeBuildProject:
@@ -47,7 +49,17 @@ Resources:
         Type:
           Ref: CodeBuildType
       Name:
-        Ref: AppName
+        Fn::Sub:
+          - ${app_name}-layman-ci
+          - app_name:
+              Ref: AppName
+      Source:
+        Type: NO_SOURCE
+        BuildSpec:
+          Fn::Sub:
+            - "${build_spec}"
+            - build_spec:
+                Ref: CodeBuildBuildSpec
       ServiceRole:
         Fn::GetAtt:
           - CodeBuildRole
