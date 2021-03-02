@@ -6,6 +6,6 @@ then
     exit
 fi
 
-aws s3 rm s3://$1-artifacts --recursive
+aws s3 rm s3://$1-layman-artifacts --recursive
 aws cloudformation delete-stack --stack-name $1-layman-ci
 

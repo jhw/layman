@@ -11,7 +11,9 @@
 
 ### lambada
 
-- bucket, codebuild project need -lambada suffixes
+- bucket, codebuild project in stack.yaml need -lambada suffixes
+  - see layman stack.yaml
+- update bucket ref in scripts/delete_stack.py
 
 ### medium
 
