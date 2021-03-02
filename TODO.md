@@ -1,9 +1,5 @@
 ### short
 
-- source with blank buildspec
-
-- test deploy/delete_stack.py
-
 - run_build.py
   - see dev/build_layer.py
   - need to update project with buildspec
@@ -19,6 +15,8 @@
 
 ### done
 
+- source with blank buildspec
+- test deploy/delete_stack.py
 - github project
 - deploy stack
 - deploy_stack.py from pareto
