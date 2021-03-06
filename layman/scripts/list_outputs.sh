@@ -6,4 +6,4 @@ then
     exit
 fi
 
-aws cloudformation describe-stacks --stack-name $1-laymana-ci --query 'Stacks[0].Outputs' --output table
+aws cloudformation describe-stacks --stack-name $1-layman-ci --query 'Stacks[0].Outputs' --output table
