@@ -1,14 +1,6 @@
 ### short
 
-- tagging
-
 ### medium
-
-### lambada
-
-- bucket, codebuild project in stack.yaml need -lambada suffixes
-  - see layman stack.yaml
-- update bucket ref in scripts/delete_stack.py, list_artifacts.py
 
 ### thoughts 
 
@@ -20,6 +12,10 @@
 
 ### done
 
+- bucket, codebuild project in stack.yaml need -lambada suffixes
+  - see layman stack.yaml
+- update bucket ref in scripts/delete_stack.py, list_artifacts.py
+- tagging
 - print buildspec on creation
 - artifacts name is wrong
   - think u need name override

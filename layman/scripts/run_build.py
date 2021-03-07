@@ -54,10 +54,14 @@ def run_build(cb, config):
     print ("--- buildspec.yaml ---")
     print (buildspecstr)
     print ("--- update_project ---")
-    print (cb.update_project(name=projectname,
-                             source=source))
+    resp=cb.update_project(name=projectname,
+                           source=source)
+    print (yaml.safe_dump(resp,
+                          default_flow_style=False))
     print ("--- start_build ---")
-    print (cb.start_build(projectName=projectname))
+    resp=cb.start_build(projectName=projectname)
+    print (yaml.safe_dump(resp,
+                          default_flow_style=False))
 
 if __name__=="__main__":
     try:
